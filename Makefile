@@ -72,3 +72,19 @@ linker_flags = '-s -X main.buildTime=${current_time} -X main.version=${git_descr
 build/api:
 	@echo 'Building cmd/api...'
 	go build -ldflags=${linker_flags} -o=./bin/api ./cmd/api
+	GOOS=linux GOARCH=amd64 go build -ldflags=${linker_flags} -o=./bin/linux_amd64/api ./cmd/api
+
+
+# PRODUCTION
+PRODUCTION_HOST_IP = ''
+
+## prod/connect: connect to the production server
+.PHONY: prod/connect
+prod/connect:
+	ssh greenlight@${PRODUCTION_HOST_IP}
+
+## prod/deploy: deploy the api to production
+.PHONY: prod/deploy
+prod/deploy:
+	rsync -rP --delete ./bin/api ./migrations greenlight@${PRODUCTION_HOST_IP}:~
+	ssh -t greenlight@${PRODUCTION_HOST_IP} 'migrate -path ~/migrations -database $${GREENLIGHT_DB_DSN} up'
