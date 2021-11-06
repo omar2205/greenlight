@@ -18,8 +18,11 @@ import (
 	"greenlight.oskr.nl/internal/mailer"
 )
 
-const version = "1.0.0"
-var buildTime string = "Err" // updated with -X linker at build time
+// updated with -X linker at build time
+var (
+	version string
+	buildTime string
+)
 
 // config struct
 type config struct {
