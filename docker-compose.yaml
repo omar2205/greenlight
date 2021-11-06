@@ -40,4 +40,4 @@ services:
       - "api.network"
 
 networks:
-  api.network
+  api.network:
