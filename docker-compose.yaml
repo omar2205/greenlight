@@ -1,0 +1,43 @@
+version: '3.8'
+
+services:
+  # api: Greenlight Go API service
+  api:
+    build: "." # build from Dockerfile
+    ports:
+      - "5000"
+    restart: "always"
+    networks:
+      - "api.network"
+    depends_on:
+      - "db"
+
+  # db: PostgreSQL server
+  db:
+    image: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./pgdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=hello
+      - POSTGRES_DB=greenlight
+    networks:
+      - "api.network"
+
+  # nginx: The reverse proxy
+  nginx:
+    image: nginx:latest
+    # connect the conf in the container to our config
+    volumes:
+    - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
+    depends_on:
+      - api
+    ports:
+      - "80:80"
+    networks:
+      - "api.network"
+
+networks:
+  api.network
