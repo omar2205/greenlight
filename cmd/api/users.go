@@ -11,22 +11,22 @@ import (
 	"greenlight.oskr.nl/internal/validator"
 )
 
-func (app *application) registerUserHandler (w http.ResponseWriter, r *http.Request) {
+func (app *application) registerUserHandler(w http.ResponseWriter, r *http.Request) {
 	var input struct {
-		Name 			string `json:"name"`
-		Email 		string `json:"email"`
-		Password 	string `json:"password"`
+		Name     string `json:"name"`
+		Email    string `json:"email"`
+		Password string `json:"password"`
 	}
-	
+
 	err := app.readJSON(w, r, &input)
 	if err != nil {
 		app.badRequestResponse(w, r, err)
 		return
 	}
 
-	user := &data.User {
-		Name: input.Name,
-		Email: input.Email,
+	user := &data.User{
+		Name:      input.Name,
+		Email:     input.Email,
 		Activated: false,
 	}
 
@@ -41,7 +41,7 @@ func (app *application) registerUserHandler (w http.ResponseWriter, r *http.Requ
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
-	
+
 	err = app.models.Users.Insert(user)
 	if err != nil {
 		switch {
@@ -71,8 +71,8 @@ func (app *application) registerUserHandler (w http.ResponseWriter, r *http.Requ
 	app.background(func() {
 		// create props to hold user id and activation code to pass to template
 		data := map[string]interface{}{
-			"activationToken": 	token.Plaintext,
-			"userID": 					user.ID,
+			"activationToken": token.Plaintext,
+			"userID":          user.ID,
 		}
 
 		err = app.mailer.Send(user.Email, "user_welcome.tmpl", data)
@@ -104,7 +104,7 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 		app.failedValidationResponse(w, r, v.Errors)
 		return
 	}
-	
+
 	// get the user associated with the token
 	user, err := app.models.Users.GetForToken(data.ScopeActivation, input.TokenPlaintext)
 	if err != nil {
@@ -117,7 +117,7 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 		}
 		return
 	}
-	
+
 	// update user's activation status and update the DB
 	user.Activated = true
 	err = app.models.Users.Update(user)
@@ -131,14 +131,14 @@ func (app *application) activateUserHandler(w http.ResponseWriter, r *http.Reque
 		}
 		return
 	}
-	
+
 	// if everything was successful, delete all activation tokens for the user
 	err = app.models.Tokens.DeleteAllForUser(data.ScopeActivation, user.ID)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)
 		return
 	}
-	
+
 	err = app.writeJSON(w, http.StatusOK, envelope{"user": user}, nil)
 	if err != nil {
 		app.serverErrorResponse(w, r, err)

@@ -1,23 +1,23 @@
 package data
 
 import (
-	"time"
+	"context"
 	"database/sql"
 	"errors"
-	"context"
 	"fmt"
-	"greenlight.oskr.nl/internal/validator"
 	"github.com/lib/pq"
+	"greenlight.oskr.nl/internal/validator"
+	"time"
 )
 
 type Movie struct {
-	ID					int64 		`json:"id"`
-	CreatedAt 	time.Time `json:"-"`
-	Title 			string 		`json:"title"`
-	Year 				int32 		`json:"year,omitempty"`
-	Runtime 		Runtime 		`json:"runtime,omitempty"`
-	Genres 			[]string 	`json:"genres,omitempty"`
-	Version 		int32 		`json:"version"`
+	ID        int64     `json:"id"`
+	CreatedAt time.Time `json:"-"`
+	Title     string    `json:"title"`
+	Year      int32     `json:"year,omitempty"`
+	Runtime   Runtime   `json:"runtime,omitempty"`
+	Genres    []string  `json:"genres,omitempty"`
+	Version   int32     `json:"version"`
 }
 
 // unique ID for the movie
@@ -32,14 +32,14 @@ type Movie struct {
 func ValidateMovie(v *validator.Validator, movie *Movie) {
 	v.Check(movie.Title != "", "title", "must be unique")
 	v.Check(len(movie.Title) <= 500, "title", "must not be more than 500 bytes long")
-	
+
 	v.Check(movie.Year != 0, "year", "must be provided")
 	v.Check(movie.Year >= 1880, "year", "must be greater than 1888")
 	v.Check(movie.Year <= int32(time.Now().Year()), "year", "must not be in the future")
-	
+
 	v.Check(movie.Runtime != 0, "runtime", "must be provided")
 	v.Check(movie.Runtime > 0, "runtime", "must be a positive integer")
-	
+
 	v.Check(movie.Genres != nil, "genres", "must be provided")
 	v.Check(len(movie.Genres) >= 1, "genres", "must contain at least 1 genre")
 	v.Check(len(movie.Genres) <= 5, "genres", "must not contain more than 5 genres")
@@ -58,7 +58,7 @@ func (m *MovieModel) Insert(movie *Movie) error {
 	`
 	args := []interface{}{movie.Title, movie.Year, movie.Runtime, pq.Array(movie.Genres)}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	return m.DB.QueryRowContext(ctx, query, args...).Scan(&movie.ID, &movie.CreatedAt, &movie.Version)
@@ -75,7 +75,7 @@ func (m *MovieModel) Get(id int64) (*Movie, error) {
 	`
 	var movie Movie
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	err := m.DB.QueryRowContext(ctx, query, id).Scan(
@@ -113,11 +113,11 @@ func (m *MovieModel) GetAll(title string, genres []string, filters Filters) ([]*
 		ORDER BY %s %s, id ASC
 		LIMIT $3 OFFSET $4
 	`, filters.sortColumn(), filters.sortDirection())
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	args := []interface{}{
-		title, pq.Array(genres), 
+		title, pq.Array(genres),
 		filters.limit(), filters.offset(),
 	}
 
@@ -166,7 +166,7 @@ func (m *MovieModel) Update(movie *Movie) error {
 		WHERE id = $5 AND version = $6
 		RETURNING version
 	`
-	args := []interface{} {
+	args := []interface{}{
 		movie.Title,
 		movie.Year,
 		movie.Runtime,
@@ -175,7 +175,7 @@ func (m *MovieModel) Update(movie *Movie) error {
 		movie.Version,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(&movie.Version)
@@ -199,7 +199,7 @@ func (m *MovieModel) Delete(id int64) error {
 		DELETE FROM movies
 		WHERE id = $1
 	`
-	ctx, cancel := context.WithTimeout(context.Background(), 3 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
 
 	results, err := m.DB.ExecContext(ctx, query, id)

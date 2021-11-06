@@ -1,17 +1,17 @@
 package main
 
 import (
-	"errors"
-	"net/http"
-	"strconv"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
-	"strings"
+	"net/http"
 	"net/url"
+	"strconv"
+	"strings"
 
-	"greenlight.oskr.nl/internal/validator"
 	"github.com/julienschmidt/httprouter"
+	"greenlight.oskr.nl/internal/validator"
 )
 
 func (app *application) readIDParam(r *http.Request) (int64, error) {
@@ -27,7 +27,7 @@ func (app *application) readIDParam(r *http.Request) (int64, error) {
 
 type envelope map[string]interface{}
 
-func (app *application) writeJSON(w http.ResponseWriter, status int, data interface {}, headers http.Header) error {
+func (app *application) writeJSON(w http.ResponseWriter, status int, data interface{}, headers http.Header) error {
 	js, err := json.MarshalIndent(data, "", "  ")
 	if err != nil {
 		return err
@@ -44,7 +44,7 @@ func (app *application) writeJSON(w http.ResponseWriter, status int, data interf
 	return nil
 }
 
-func(app *application) readJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
+func (app *application) readJSON(w http.ResponseWriter, r *http.Request, dst interface{}) error {
 	maxBytes := 1_048_576
 	r.Body = http.MaxBytesReader(w, r.Body, int64(maxBytes))
 
@@ -76,7 +76,7 @@ func(app *application) readJSON(w http.ResponseWriter, r *http.Request, dst inte
 		case strings.HasPrefix(err.Error(), "json: unkown field "):
 			fieldName := strings.TrimPrefix(err.Error(), "json: unkown field ")
 			return fmt.Errorf("body contains unkown key %s", fieldName)
-			
+
 		case err.Error() == "http: request body too large":
 			return fmt.Errorf("body must not be larger than %d bytes", maxBytes)
 

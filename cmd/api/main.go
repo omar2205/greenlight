@@ -11,50 +11,49 @@ import (
 	"sync"
 	"time"
 
+	_ "github.com/lib/pq"
 	"greenlight.oskr.nl/internal/data"
 	"greenlight.oskr.nl/internal/jsonlog"
 	"greenlight.oskr.nl/internal/mailer"
-	_ "github.com/lib/pq"
 )
 
 const version = "1.0.0"
 
 // config struct
 type config struct {
-	port 	int
-	env 	string // dev | staging | prod
-	db struct {
-		dsn 					string
-		maxOpenConns 	int
-		maxIdleConns 	int
-		maxIdleTime 	string
+	port int
+	env  string // dev | staging | prod
+	db   struct {
+		dsn          string
+		maxOpenConns int
+		maxIdleConns int
+		maxIdleTime  string
 	}
 	limiter struct {
-		rps 			float64
-		burst 		int
-		enabled 	bool
+		rps     float64
+		burst   int
+		enabled bool
 	}
 	smtp struct {
-		host 			string
-		port 			int
-		username 	string
-		password 	string
-		sender 		string
+		host     string
+		port     int
+		username string
+		password string
+		sender   string
 	}
 	cors struct {
 		trustedOrigins []string
 	}
 }
 
-
 // application struct to hold depends for our HTTP handlers,
 // helpers, and middleware.
 type application struct {
-	config 	config
-	logger 	*jsonlog.Logger
-	models 	data.Models
-	mailer 	mailer.Mailer
-	wg 			sync.WaitGroup
+	config config
+	logger *jsonlog.Logger
+	models data.Models
+	mailer mailer.Mailer
+	wg     sync.WaitGroup
 }
 
 func main() {
@@ -68,12 +67,12 @@ func main() {
 	flag.IntVar(&cfg.db.maxOpenConns, "db-max-open-conns", 25, "PostgreSQL max open connection")
 	flag.IntVar(&cfg.db.maxIdleConns, "db-max-idle-conns", 25, "PostgreSQL max idle connection")
 	flag.StringVar(&cfg.db.maxIdleTime, "db-max-idle-time", "15m", "PostgreSQL max connection idle time")
-	
+
 	// rate limit conf
 	flag.Float64Var(&cfg.limiter.rps, "limiter-rps", 2, "Rate limiter maximum requests per second")
 	flag.IntVar(&cfg.limiter.burst, "limiter-burst", 4, "Rate limiter maximum burst")
 	flag.BoolVar(&cfg.limiter.enabled, "limiter-enabled", true, "Enable rate limiter")
-	
+
 	// mailer conf
 	flag.StringVar(&cfg.smtp.host, "smtp-host", "smtp.mailtrap.io", "SMTP host")
 	flag.IntVar(&cfg.smtp.port, "smtp-port", 25, "SMTP port")
@@ -115,16 +114,15 @@ func main() {
 
 	// declare an instance of application struct which contains
 	// our config and the logger
-	app := &application {
+	app := &application{
 		config: cfg,
 		logger: logger,
 		models: data.NewModels(db),
 		mailer: mailer.New(
-			cfg.smtp.host, cfg.smtp.port, 
+			cfg.smtp.host, cfg.smtp.port,
 			cfg.smtp.username, cfg.smtp.password, cfg.smtp.sender,
 		),
 	}
-
 
 	err = app.serve()
 	if err != nil {
@@ -146,7 +144,7 @@ func openDB(cfg config) (*sql.DB, error) {
 	}
 	db.SetConnMaxIdleTime(duration)
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5 * time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	err = db.PingContext(ctx)

@@ -7,28 +7,28 @@ import (
 	"errors"
 	"time"
 
-	"greenlight.oskr.nl/internal/validator"
 	"golang.org/x/crypto/bcrypt"
+	"greenlight.oskr.nl/internal/validator"
 )
 
 var (
 	ErrDuplicateEmail = errors.New("duplicate email")
-	AnonymousUser = &User{}
+	AnonymousUser     = &User{}
 )
 
 type User struct {
-	ID 					int64 		`json:"id"`
-	CreatedAt 	time.Time `json:"created_at"`
-	Name 				string 		`json:"name"`
-	Email 			string 		`json:"email"`
-	Password 		password 	`json:"-"`
-	Activated 	bool 			`json:"activated"`
-	Version 		int 			`json:"-"`
+	ID        int64     `json:"id"`
+	CreatedAt time.Time `json:"created_at"`
+	Name      string    `json:"name"`
+	Email     string    `json:"email"`
+	Password  password  `json:"-"`
+	Activated bool      `json:"activated"`
+	Version   int       `json:"-"`
 }
 
 type password struct {
 	plaintext *string
-	hash 			[]byte
+	hash      []byte
 }
 
 func (u *User) IsAnonymous() bool {
@@ -76,7 +76,7 @@ func ValidateUser(v *validator.Validator, user *User) {
 	v.Check(len(user.Name) <= 500, "name", "must not be more than 500 bytes long")
 
 	ValidateEmail(v, user.Email)
-	
+
 	// if password isn't null validate it
 	if user.Password.plaintext != nil {
 		ValidatePasswordPlaintext(v, *user.Password.plaintext)
@@ -89,7 +89,6 @@ func ValidateUser(v *validator.Validator, user *User) {
 	}
 }
 
-
 type UserModel struct {
 	DB *sql.DB
 }
@@ -101,7 +100,7 @@ func (m UserModel) Insert(user *User) error {
 		RETURNING id, created_at, version
 	`
 
-	args := []interface{} {
+	args := []interface{}{
 		user.Name, user.Email, user.Password.hash,
 		user.Activated,
 	}
@@ -130,12 +129,12 @@ func (m UserModel) GetByEmail(email string) (*User, error) {
 		FROM users
 		WHERE email = $1
 	`
-	
+
 	var user User
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	
+
 	err := m.DB.QueryRowContext(ctx, query, email).Scan(
 		&user.ID,
 		&user.CreatedAt,
@@ -153,7 +152,7 @@ func (m UserModel) GetByEmail(email string) (*User, error) {
 			return nil, err
 		}
 	}
-	
+
 	return &user, nil
 }
 
@@ -164,8 +163,8 @@ func (m UserModel) Update(user *User) error {
 		WHERE id = $5 AND version = $6
 		RETURNING version
 	`
-	
-	args := []interface{} {
+
+	args := []interface{}{
 		user.Name,
 		user.Email,
 		user.Password.hash,
@@ -173,10 +172,10 @@ func (m UserModel) Update(user *User) error {
 		user.ID,
 		user.Version,
 	}
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	
+
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(
 		&user.Version,
 	)
@@ -190,7 +189,7 @@ func (m UserModel) Update(user *User) error {
 			return err
 		}
 	}
-	
+
 	return nil
 }
 
@@ -208,12 +207,12 @@ func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error)
 	`
 
 	args := []interface{}{tokenHash[:], tokenScope, time.Now()}
-	
+
 	var user User
-	
+
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
-	
+
 	err := m.DB.QueryRowContext(ctx, query, args...).Scan(
 		&user.ID,
 		&user.CreatedAt,
@@ -231,6 +230,6 @@ func (m UserModel) GetForToken(tokenScope, tokenPlaintext string) (*User, error)
 			return nil, err
 		}
 	}
-	
+
 	return &user, nil
 }

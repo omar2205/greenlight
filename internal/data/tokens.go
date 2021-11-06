@@ -12,23 +12,23 @@ import (
 )
 
 const (
-	ScopeActivation = "activation"
+	ScopeActivation     = "activation"
 	ScopeAuthentication = "authentication"
 )
 
 type Token struct {
-	Plaintext string 		`json:"token"`
-	Hash 			[]byte 		`json:"-"`
-	UserID 		int64 		`json:"-"`
-	Expiry 		time.Time `json:"expiry"`
-	Scope 		string 		`json:"-"`
+	Plaintext string    `json:"token"`
+	Hash      []byte    `json:"-"`
+	UserID    int64     `json:"-"`
+	Expiry    time.Time `json:"expiry"`
+	Scope     string    `json:"-"`
 }
 
 func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error) {
-	token := &Token {
+	token := &Token{
 		UserID: userID,
 		Expiry: time.Now().Add(ttl), // add time-to-live to now
-		Scope: scope,
+		Scope:  scope,
 	}
 
 	// init a zero-valued 16 bytes slice
@@ -43,7 +43,7 @@ func generateToken(userID int64, ttl time.Duration, scope string) (*Token, error
 	// base32.NoPadding removes = from the end
 	token.Plaintext = base32.StdEncoding.WithPadding(base32.NoPadding).EncodeToString(randomBytes)
 
-	// generate a sha-256 from plaintext which we will store in 
+	// generate a sha-256 from plaintext which we will store in
 	// the tokens table. Sub256() returns an array of len 32, we
 	// convert it to a slice using [:] operator
 	hash := sha256.Sum256([]byte(token.Plaintext))

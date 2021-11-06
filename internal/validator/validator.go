@@ -50,7 +50,6 @@ func Matches(value string, rx *regexp.Regexp) bool {
 	return rx.MatchString(value)
 }
 
-
 // returns true if all strings in a slice are unique
 func Unique(values []string) bool {
 	uniqueValues := make(map[string]bool)

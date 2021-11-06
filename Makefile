@@ -1,4 +1,12 @@
+include .env
+
+# helpers =========
+
 ## help: print this help message
+.PHONY: test/a
+test/a:
+	@echo 'hi'
+
 .PHONY: help
 help:
 	@echo 'Usage:'
@@ -8,9 +16,12 @@ help:
 confirm:
 	@echo -n 'Are you sure? [y/N] ' && read ans && [ $${ans:-N} = y ]
 
+# DEV =======
+
 ## run/api: run the cmd/api application
 .PHONY: run/api
 run/api:
+	@sudo /etc/init.d/postgresql start
 	go run ./cmd/api -db-dsn=${GREENLIGHT_DB_DSN}
 
 ## db/psql: connect to the database using psql
@@ -30,3 +41,23 @@ db/migrations/up: confirm
 	@echo 'Running up migrations...'
 	migrate -path ./migrations -database ${GREENLIGHT_DB_DSN} up
 
+# Quality Control ===========
+## audit: tidy, vendor dependencies, format, vet and test all code
+.PHONY: audit
+audit: vendor
+	@echo '=== Formatting code...'
+	go fmt ./...
+	@echo '=== Vetting code...'
+	go vet ./...
+	staticcheck ./...
+	@echo '=== Running tests...'
+	go test -race -vet=off ./...
+
+## vendor
+.PHONY: vendr
+vendor:
+	@echo '=== Tidying and verifying module dependencies...'
+	go mod tidy
+	go mod verify
+	@echo '=== Vendoring dependencies...'
+	go mod vendor

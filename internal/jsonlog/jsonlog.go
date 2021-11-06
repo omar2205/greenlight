@@ -12,10 +12,10 @@ import (
 type Level int8
 
 const (
-	LevelInfo 	Level = iota 	// 0
-	LevelError 								// 1
-	LevelFatal 								// 2
-	LevelOff 									// 3
+	LevelInfo  Level = iota // 0
+	LevelError              // 1
+	LevelFatal              // 2
+	LevelOff                // 3
 )
 
 // return human-friendly string for sec level
@@ -33,14 +33,14 @@ func (l Level) String() string {
 }
 
 type Logger struct {
-	out 			io.Writer
-	minLevel 	Level
-	mu 				sync.Mutex
+	out      io.Writer
+	minLevel Level
+	mu       sync.Mutex
 }
 
 func New(out io.Writer, minLevel Level) *Logger {
-	return &Logger {
-		out: out,
+	return &Logger{
+		out:      out,
 		minLevel: minLevel,
 	}
 }
@@ -64,15 +64,15 @@ func (l *Logger) print(level Level, message string, properties map[string]string
 	}
 
 	aux := struct {
-		Level 			string 							`json:"level"`
-		Time 				string 							`json:"time"`
-		Message 		string 							`json:"message"`
-		Properties 	map[string]string 	`json:"properties,omitempty"`
-		Trace 			string 							`json:"trace,omitempty"`
-	} {
-		Level: level.String(),
-		Time: time.Now().UTC().Format(time.RFC3339),
-		Message: message,
+		Level      string            `json:"level"`
+		Time       string            `json:"time"`
+		Message    string            `json:"message"`
+		Properties map[string]string `json:"properties,omitempty"`
+		Trace      string            `json:"trace,omitempty"`
+	}{
+		Level:      level.String(),
+		Time:       time.Now().UTC().Format(time.RFC3339),
+		Message:    message,
 		Properties: properties,
 	}
 

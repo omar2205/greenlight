@@ -21,7 +21,7 @@ import (
 )
 
 func (app *application) recoverPanic(next http.Handler) http.Handler {
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		defer func() {
 			if err := recover(); err != nil {
 				w.Header().Set("Connection", "Close")
@@ -34,12 +34,12 @@ func (app *application) recoverPanic(next http.Handler) http.Handler {
 
 func (app *application) rateLimit(next http.Handler) http.Handler {
 	type client struct {
-		limiter *rate.Limiter
+		limiter  *rate.Limiter
 		lastSeen time.Time
 	}
 
 	var (
-		mu sync.Mutex
+		mu      sync.Mutex
 		clients = make(map[string]*client)
 	)
 
@@ -50,7 +50,7 @@ func (app *application) rateLimit(next http.Handler) http.Handler {
 			mu.Lock()
 
 			for ip, client := range clients {
-				if time.Since(client.lastSeen) > 3 * time.Minute {
+				if time.Since(client.lastSeen) > 3*time.Minute {
 					delete(clients, ip)
 				}
 			}
@@ -108,11 +108,11 @@ func (app *application) authenticate(next http.Handler) http.Handler {
 			app.invalidAuthenticationTokenResponse(w, r)
 			return
 		}
-		
+
 		token := headerParts[1]
-		
-		v:= validator.New()
-		
+
+		v := validator.New()
+
 		if data.ValidateTokenPlaintext(v, token); !v.Valid() {
 			app.invalidAuthenticationTokenResponse(w, r)
 			return
@@ -150,17 +150,17 @@ func (app *application) requireAthenticatedUser(next http.HandlerFunc) http.Hand
 func (app *application) requireActivatedUser(next http.HandlerFunc) http.HandlerFunc {
 	fn := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		user := app.contextGetUser(r)
-		
+
 		if user.IsAnonymous() {
 			app.authenticationRequiredResponse(w, r)
 			return
 		}
-		
+
 		if !user.Activated {
 			app.inactiveAccountResponse(w, r)
 			return
 		}
-		
+
 		next.ServeHTTP(w, r)
 	})
 
@@ -205,11 +205,11 @@ func (app *application) enableCORS(next http.Handler) http.Handler {
 					// preflight req
 					if r.Method == http.MethodOptions &&
 						r.Header.Get("Access-Control-Request-Method") != "" {
-							w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, PUT, PATCH, DELETE")
-							w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
+						w.Header().Set("Access-Control-Allow-Methods", "OPTIONS, PUT, PATCH, DELETE")
+						w.Header().Set("Access-Control-Allow-Headers", "Authorization, Content-Type")
 
-							w.WriteHeader(http.StatusOK)
-							return
+						w.WriteHeader(http.StatusOK)
+						return
 					}
 				}
 			}

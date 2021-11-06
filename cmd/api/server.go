@@ -4,22 +4,22 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"log"
 	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
 	"time"
-	"log"
 )
 
 func (app *application) serve() error {
-	srv := &http.Server {
-		Addr: fmt.Sprintf(":%d", app.config.port),
-		Handler: app.routes(),
-		IdleTimeout: time.Minute,
-		ReadTimeout: 10 * time.Second,
+	srv := &http.Server{
+		Addr:         fmt.Sprintf(":%d", app.config.port),
+		Handler:      app.routes(),
+		IdleTimeout:  time.Minute,
+		ReadTimeout:  10 * time.Second,
 		WriteTimeout: 30 * time.Second,
-		ErrorLog: log.New(app.logger, "", 0),
+		ErrorLog:     log.New(app.logger, "", 0),
 	}
 
 	// shutdown channel
@@ -39,13 +39,13 @@ func (app *application) serve() error {
 		// * this code will block until a signal is received
 		s := <-quit
 
-		app.logger.PrintInfo("shutting down server", map[string]string {
+		app.logger.PrintInfo("shutting down server", map[string]string{
 			"signal": s.String(),
 		})
-		
+
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		
+
 		err := srv.Shutdown(ctx)
 		if err != nil {
 			shutdownError <- err
@@ -57,9 +57,9 @@ func (app *application) serve() error {
 		shutdownError <- nil
 	}()
 
-	app.logger.PrintInfo("starting server", map[string]string {
+	app.logger.PrintInfo("starting server", map[string]string{
 		"addr": srv.Addr,
-		"env": app.config.env,
+		"env":  app.config.env,
 	})
 
 	// calling Shutdown() causes listen&serve to return ErrServerClosed
@@ -72,12 +72,12 @@ func (app *application) serve() error {
 	// otherwise, we wait to receive the return value from Shutdown()
 	// if return value is an error, we know there was a problem with
 	// the graceful shutdown
-	err = <- shutdownError
+	err = <-shutdownError
 	if err != nil {
 		return err
 	}
 
-	app.logger.PrintInfo("stopped server", map[string]string {
+	app.logger.PrintInfo("stopped server", map[string]string{
 		"addr": srv.Addr,
 	})
 
