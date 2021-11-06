@@ -91,7 +91,7 @@ prod/deploy:
 	ssh -t ${SSH_CONNECT} 'migrate -path ~/migrations -database $${GREENLIGHT_DB_DSN} up'
 
 
-## prod/deploy: deploy the api to production
+## prod/config/api.service: deploy the production systemd api.service file
 .PHONY: prod/config/api.service
 prod/config/api.service:
 	resync -P ./remote/production/api.service ${SSH_CONNECT}:~
