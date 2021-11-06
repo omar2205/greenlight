@@ -1,0 +1,3 @@
+http://ip {
+  reverse_proxy localhost:4000
+}

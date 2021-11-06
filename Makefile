@@ -100,3 +100,12 @@ prod/config/api.service:
 		&& sudo systemctl enable api \
 		&& sudo systemctl restart api \
 		'
+
+## prod/config/caddyfile: deploy & configure the production Caddyfile
+.PHONY: prod/config/caddyfile
+prod/config/caddyfile:
+	resync -P ./remote/production/Caddyfile ${SSH_CONNECT}:~
+	ssh -t ${SSH_CONNECT} '\
+		sudo mv ~/Caddyfile /etc/caddy/ \
+		&& sudo systemctl reload caddy \
+		'
