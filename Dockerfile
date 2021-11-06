@@ -19,7 +19,7 @@ RUN GOOS=linux GOARCH=amd64 \
 # Second stage: running the API
 FROM alpine:latest
 
-RUN apk add ca-certificates
+RUN apk add ca-certificates curl tar
 
 COPY --from=build /tmp/greenlight/bin/linux_amd64/api /app/api
 COPY --from=build /tmp/greenlight/setup.sh /app/setup.sh
