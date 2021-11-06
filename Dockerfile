@@ -28,10 +28,10 @@ WORKDIR "/app"
 
 EXPOSE 5000
 
-RUN /bin/sh -c ./setup.sh
-
 # Download migrate tool
 RUN curl -L --no-progress-meter https://github.com/golang-migrate/migrate/releases/download/v4.15.1/migrate.linux-amd64.tar.gz | tar xvz
+
+RUN /bin/sh -c ./setup.sh
 
 # Run the API in prod mode
 CMD ["./api", "-port=5000", "-db-dsn=postgres://postgres:hello@db/greenlight?sslmode=disable", "-env=production"]
