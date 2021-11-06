@@ -63,8 +63,10 @@ vendor:
 	go mod vendor
 
 # BUILD ===========================
+current_time = $(shell date --iso-8601=seconds)
+
 ## build/api: build the cmd/api application
 .PHONY: build/api
 build/api:
 	@echo 'Building cmd/api...'
-	go build -ldflags='-s' -o=./bin/api ./cmd/api
+	go build -ldflags='-s -X main.buildTime=${current_time}' -o=./bin/api ./cmd/api
