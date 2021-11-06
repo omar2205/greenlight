@@ -76,15 +76,27 @@ build/api:
 
 
 # PRODUCTION
-PRODUCTION_HOST_IP = ''
+PRODUCTION_HOST_IP = '22'
+SSH_CONNECT = 'greenlight@${PRODUCTION_HOST_IP}'
 
 ## prod/connect: connect to the production server
 .PHONY: prod/connect
 prod/connect:
-	ssh greenlight@${PRODUCTION_HOST_IP}
+	ssh ${SSH_CONNECT}
 
 ## prod/deploy: deploy the api to production
 .PHONY: prod/deploy
 prod/deploy:
-	rsync -rP --delete ./bin/api ./migrations greenlight@${PRODUCTION_HOST_IP}:~
-	ssh -t greenlight@${PRODUCTION_HOST_IP} 'migrate -path ~/migrations -database $${GREENLIGHT_DB_DSN} up'
+	rsync -rP --delete ./bin/api ./migrations ${SSH_CONNECT}:~
+	ssh -t ${SSH_CONNECT} 'migrate -path ~/migrations -database $${GREENLIGHT_DB_DSN} up'
+
+
+## prod/deploy: deploy the api to production
+.PHONY: prod/config/api.service
+prod/config/api.service:
+	resync -P ./remote/production/api.service ${SSH_CONNECT}:~
+	ssh -t ${SSH_CONNECT} '\
+		sudo mv ~/api.service /etc/systemd/system/ \
+		&& sudo systemctl enable api \
+		&& sudo systemctl restart api \
+		'
