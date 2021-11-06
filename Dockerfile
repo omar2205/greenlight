@@ -19,8 +19,8 @@ FROM alpine:latest
 
 RUN apk add ca-certificates
 
-COPY --from=build /tmp/app/bin/linux_amd64/api /app/api
-COPY --from=build /tmp/app/setup.sh /app/setup.sh
+COPY --from=build /tmp/greenlight/bin/linux_amd64/api /app/api
+COPY --from=build /tmp/greenlight/setup.sh /app/setup.sh
 
 WORKDIR "/app"
 
