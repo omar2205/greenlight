@@ -225,17 +225,13 @@ func (app *application) metrics(next http.Handler) http.Handler {
 	totalResponseSentByStatus := expvar.NewMap("total_response_sent_by_status")
 
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		// start := time.Now()
 
 		totalRequestsReceived.Add(1)
 
 		metrics := httpsnoop.CaptureMetrics(next, w, r)
 
-		// next.ServeHTTP(w, r)
-
 		totalResponsesSent.Add(1)
 
-		// duration := time.Now().Sub(start).Microseconds()
 		totalProcessingTimeMicroseconds.Add(metrics.Duration.Microseconds())
 
 		totalResponseSentByStatus.Add(strconv.Itoa(metrics.Code), 1)
