@@ -8,6 +8,8 @@ RUN apk update && apk upgrade && \
 WORKDIR /tmp/greenlight
 
 COPY . .
+RUN date +"%Y-%m-%dT%H:%M:%S%z" > date_r \
+    && git describe --always --dirty --tags --long > git_description
 
 RUN GOOS=linux GOARCH=amd64 \
     go build -ldflags="-s -X main.buildTime=$(cat ./date_r) -X main.version=$(cat ./git_description)" \
