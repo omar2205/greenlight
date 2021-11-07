@@ -35,6 +35,8 @@ services:
       - "api.network"
     volumes:
       - ./migrations:/migrations
+    links:
+      - db
     depends_on:
       - db
 
