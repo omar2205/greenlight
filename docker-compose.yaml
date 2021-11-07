@@ -31,18 +31,18 @@ services:
   db_migrations:
     image: migrate/migrate
     command: -path=/migrations/ -database postgres://postgres:hello@db:5432/greenlight?sslmode=disable up
+    restart: "always"
     networks:
       - "api.network"
     volumes:
       - ./migrations:/migrations
-    links:
-      - db
     depends_on:
       - db
 
   # nginx: The reverse proxy
   nginx:
     image: nginx:latest
+    restart: "always"
     # connect the conf in the container to our config
     volumes:
     - ./nginx/nginx.conf:/etc/nginx/nginx.conf:ro
