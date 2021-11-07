@@ -1,6 +1,6 @@
-FROM ubuntu:20.04
+FROM alpine:latest
 
-RUN apt update && apt install curl tar -y
+RUN apk add ca-certificates curl tar
 
 WORKDIR "/db_migrations"
 
